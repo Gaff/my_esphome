@@ -1,7 +1,12 @@
 platform: thermostat
 name: "Zone ${index}"
 sensor: hass_zone_${index}
-min_idle_time: 5s
+# These aggresive times make testing easier.
+# The defaults are FAR slower than this
+# Can't see any real point in making it less agressive,
+# the inertia of our heating system is humongous, so it's not going
+# to fluctuate really.
+min_idle_time: 15s
 min_heating_off_time: 15s
 min_heating_run_time: 15s
 heat_action:
