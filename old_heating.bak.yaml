@@ -1,0 +1,88 @@
+substitutions:
+  name: esphome-web-f6030c
+  friendly_name: Heating Controller
+
+esphome:
+  name: ${name}
+  friendly_name: ${friendly_name}
+  name_add_mac_suffix: false
+  project:
+    name: esphome.web
+    version: '1.0'
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+      key: kruT9fN3Cq5a/wobJxchHdEX8gIW3Z67E+rWOFh1RWY=
+
+# Allow Over-The-Air updates
+ota:
+
+# Allow provisioning Wi-Fi via serial
+improv_serial:
+
+wifi:
+  # Set up a wifi access point
+  ap: {}
+  ssid: ha-shaylor
+  password: tps7gG5xjt4S
+  fast_connect: true
+
+# In combination with the  this allows the user
+# to provision wifi credentials to the device via WiFi AP.
+captive_portal:
+
+# Sets up Bluetooth LE (Only on ESP32) to allow the user
+# to provision wifi credentials to the device.
+esp32_improv:
+  authorizer: none
+
+# Status LED
+light:
+  - platform: status_led
+    name: "RelayBoard Led"
+    pin:
+      number: GPIO23
+
+# 8 relay outputs, exposed as switches in Home Assistant
+switch:
+  - platform: gpio
+    pin: GPIO32
+    name: Relay1
+    id: relay1
+  - platform: gpio
+    pin: GPIO33
+    name: Relay2
+    id: relay2
+  - platform: gpio
+    pin: GPIO25
+    name: Relay3
+    id: relay3
+  - platform: gpio
+    pin: GPIO26
+    name: Relay4
+    id: relay4
+  - platform: gpio
+    pin: GPIO27
+    name: Relay5
+    id: relay5
+  - platform: gpio
+    pin: GPIO14
+    name: Relay6
+    id: relay6
+  - platform: gpio
+    pin: GPIO12
+    name: Relay7
+    id: relay7
+  - platform: gpio
+    pin: GPIO13
+    name: Relay8
+    id: relay8

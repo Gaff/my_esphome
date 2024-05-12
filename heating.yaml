@@ -69,39 +69,66 @@ binary_sensor:
         - light.turn_off: status_led_23
         - script.execute: update_heating_state
 
-# 8 relay outputs, exposed as switches in Home Assistant
+  # Expose the relays but as sensors (i.e. read only!)
+  - platform: template
+    id: heating1
+    name: Heating 1
+    lambda: return id(relay1).state;
+  - platform: template
+    id: heating2
+    name: Heating 2
+    lambda: return id(relay2).state;
+  - platform: template
+    id: heating3
+    name: Heating 3
+    lambda: return id(relay3).state;
+  - platform: template
+    id: heating4
+    name: Heating 4
+    lambda: return id(relay4).state;
+  - platform: template
+    id: heating5
+    name: Heating 5
+    lambda: return id(relay5).state;
+  - platform: template
+    id: heating6
+    name: Heating 6
+    lambda: return id(relay6).state;
+  - platform: template
+    id: heating7
+    name: Heating 7
+    lambda: return id(relay7).state;
+  - platform: template
+    id: heating8
+    name: Heating 8
+    lambda: return id(relay8).state;
+
+
+# 8 relay outputs, NOT exposed as switches in Home Assistant
 switch:
   - platform: gpio
     pin: GPIO32
-    name: Relay1
     id: relay1
   - platform: gpio
     pin: GPIO33
-    name: Relay2
     id: relay2
   - platform: gpio
     pin: GPIO25
-    name: Relay3
     id: relay3
   - platform: gpio
     pin: GPIO26
-    name: Relay4
     id: relay4
   - platform: gpio
     pin: GPIO27
-    name: Relay5
     id: relay5
   - platform: gpio
     pin: GPIO14
-    name: Relay6
     id: relay6
   - platform: gpio
     pin: GPIO12
-    name: Relay7
     id: relay7
   - platform: gpio
     pin: GPIO13
-    name: Relay8
     id: relay8
 
   # Template switch to quickly disable everything
@@ -138,6 +165,9 @@ globals:
 script:
   - id: update_heating_state
     then:
+      # Update the relays:
+      # NTH: Might be better to only turn on/off relays if the state needs to change
+      # (or might not - this way we get a force-reset effect)
       - lambda: |-
           int system_on = id(master_switch).state && id(hass_status).state;
           if(id(heat_req_1) && system_on) id(relay1).turn_on(); else id(relay1).turn_off();
@@ -148,6 +178,17 @@ script:
           if(id(heat_req_6) && system_on) id(relay6).turn_on(); else id(relay6).turn_off();
           if(id(heat_req_7) && system_on) id(relay7).turn_on(); else id(relay7).turn_off();
           if(id(heat_req_8) && system_on) id(relay8).turn_on(); else id(relay8).turn_off();
+      # Force the sensors to update:
+      - lambda: |-
+          id(heating1).loop();
+          id(heating2).loop();
+          id(heating3).loop();
+          id(heating4).loop();
+          id(heating5).loop();
+          id(heating6).loop();
+          id(heating7).loop();
+          id(heating8).loop();
+
 
 sensor:
   - platform: homeassistant

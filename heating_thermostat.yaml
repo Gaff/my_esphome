@@ -1,9 +1,9 @@
 platform: thermostat
 name: "Zone ${index}"
 sensor: hass_zone_${index}
-min_idle_time: 30s
-min_heating_off_time: 60s
-min_heating_run_time: 60s
+min_idle_time: 5s
+min_heating_off_time: 15s
+min_heating_run_time: 15s
 heat_action:
   - lambda: id(heat_req_${index}) = true;
   - script.execute: update_heating_state
