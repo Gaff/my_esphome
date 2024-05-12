@@ -70,6 +70,7 @@ binary_sensor:
         - script.execute: update_heating_state
 
   # Expose the relays but as sensors (i.e. read only!)
+  # Note that template sensors update every loop() no matter what.
   - platform: template
     id: heating1
     name: Heating 1
