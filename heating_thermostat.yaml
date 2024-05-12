@@ -28,28 +28,57 @@ default_preset: home
 on_control:
   # The idea here is we want to store the setpoint and mode for the "home" peset
   # When we change back to the home preset, we restore these things!
+  #
+  # Note that the Thermostat changes are a bit non-intuitive:
+  # 1. User changes preset
+  # 2. Thermostat internally changes Climate state
+  # 3. Thermostat propagates the changes through the system
+  # 4. This code intercepts the state update, to change it
+  # 5. New state propagates through the system
+  # 6. Internal climate state is updated.
+  #
+  # If we restore the settings in step 4 it's too late. Hence we need to do it in step 2.
+  # The issue here is the presets, which should be taken out of the themostat and simply be a control layer
+  # ...but that's a lot of work!
   - lambda: |-
+      /*
       auto xp = x.get_preset();
-      if(xp.has_value()) {
+      if(xp.has_value()) {        
         if(xp.value() == ClimatePreset::CLIMATE_PRESET_HOME) {
           // We are setting the preset back to 'HOME' mode...
-          ESP_LOGD("MSH", " Restoring setpoint ${index}: %.2f", id(setpoint)[${index}-1]);
+          ESP_LOGD("THERMOSTAT", " Restoring setpoint ${index}: %.2f", id(setpoint)[${index}-1]);
           x.set_target_temperature(id(setpoint)[${index}-1]);
-          ESP_LOGD("MSH", " Restoring setmode ${index}: %d", id(setmode)[${index}-1]);
+          ESP_LOGD("THERMOSTAT", " Restoring setmode ${index}: %d", id(setmode)[${index}-1]);
           x.set_mode(id(setmode)[${index}-1]);
+        } 
+      }*/
+  - lambda: |-
+      auto zp = id(zone_${index}).preset;
+      if(zp.has_value() && zp.value() == ClimatePreset::CLIMATE_PRESET_HOME) {
+        //An adjustment is being made in 'HOME' mode...
+        if(x.get_target_temperature().has_value()) {
+          ESP_LOGD("THERMOSTAT", " Saving setpoint ${index}: %.2f", x.get_target_temperature().value());
+          id(setpoint)[${index}-1] = x.get_target_temperature().value();
         }
-                        
-      } else {
-        auto zp = id(zone_${index}).preset;
-        if(zp.has_value() && zp.value() == ClimatePreset::CLIMATE_PRESET_HOME) {
-          //An adjustment is being made in 'HOME' mode...
-          if(x.get_target_temperature().has_value()) {
-            ESP_LOGD("MSH", " Saving setpoint ${index}: %.2f", x.get_target_temperature().value());
-            id(setpoint)[${index}-1] = x.get_target_temperature().value();
-          }
-          if(x.get_mode().has_value()) {
-            ESP_LOGD("MSH", " Saving mode ${index}: %d", x.get_mode().value());
-            id(setmode)[${index}-1] = x.get_mode().value();
-          }
+        if(x.get_mode().has_value()) {
+          ESP_LOGD("THERMOSTAT", " Saving mode ${index}: %d", x.get_mode().value());
+          id(setmode)[${index}-1] = x.get_mode().value();
         }
       }
+preset_change:
+  # At this point the internal state has been updated with the new preset, but no mode status
+  # has been sent yet.
+  # Use a lambda to update the settings we care about to the stored values.
+  # NB: Better to use this than on_control(), see note above:
+  - lambda: |-
+      auto zone = id(zone_${index});
+      auto zp = zone->preset;
+      if(zp.has_value() && zp.value() == ClimatePreset::CLIMATE_PRESET_HOME) {
+        //We just changed back to home
+        ESP_LOGD("THERMOSTAT", " Restoring setpoint ${index}: %.2f", id(setpoint)[${index}-1]);
+        ESP_LOGD("THERMOSTAT", " Restoring setmode ${index}: %d", id(setmode)[${index}-1]);
+
+        zone->mode = id(setmode)[${index}-1];
+        zone->target_temperature = id(setpoint)[${index}-1];
+      }
+
