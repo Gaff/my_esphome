@@ -178,17 +178,6 @@ script:
           if(id(heat_req_6) && system_on) id(relay6).turn_on(); else id(relay6).turn_off();
           if(id(heat_req_7) && system_on) id(relay7).turn_on(); else id(relay7).turn_off();
           if(id(heat_req_8) && system_on) id(relay8).turn_on(); else id(relay8).turn_off();
-      # Force the sensors to update:
-      - lambda: |-
-          id(heating1).loop();
-          id(heating2).loop();
-          id(heating3).loop();
-          id(heating4).loop();
-          id(heating5).loop();
-          id(heating6).loop();
-          id(heating7).loop();
-          id(heating8).loop();
-
 
 sensor:
   - platform: homeassistant
