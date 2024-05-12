@@ -169,6 +169,9 @@ script:
       # Update the relays:
       # NTH: Might be better to only turn on/off relays if the state needs to change
       # (or might not - this way we get a force-reset effect)
+      # Also this weighs in at 50ms which is 'too slow'. Seems an age, and I'm guessing it's mostly
+      # logging. Making the relays respect state would make the average case much better, but perhaps 
+      # it's best to leave it with constant worst-case performance?
       - lambda: |-
           int system_on = id(master_switch).state && id(hass_status).state;
           if(id(heat_req_1) && system_on) id(relay1).turn_on(); else id(relay1).turn_off();
