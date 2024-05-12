@@ -1,0 +1,189 @@
+substitutions:
+  name: esphome-heating-f6030c
+  friendly_name: Heating Controller
+
+esphome:
+  name: ${name}
+  friendly_name: ${friendly_name}
+  name_add_mac_suffix: false
+  project:
+    name: esphome.web
+    version: '1.0'
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+      key: !secret heating_key
+
+# Allow Over-The-Air updates
+ota:
+
+# Allow provisioning Wi-Fi via serial
+improv_serial:
+
+wifi:
+  # Set up a wifi access point
+  ap: {}
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  fast_connect: true
+
+# In combination with the  this allows the user
+# to provision wifi credentials to the device via WiFi AP.
+captive_portal:
+
+# Sets up Bluetooth LE (Only on ESP32) to allow the user
+# to provision wifi credentials to the device.
+esp32_improv:
+  authorizer: none
+
+# Status LED
+light:
+  platform: status_led
+  pin: GPIO23
+  id: status_led_23
+  internal: true
+
+button:
+  - platform: restart
+    name: "${friendly_name} restart"
+
+binary_sensor:
+  - platform: status
+    name: "${friendly_name} status"
+    id: hass_status
+    on_press:
+      then:
+        - light.turn_on: status_led_23
+        - script.execute: update_heating_state
+    on_release:
+      then:
+        - light.turn_off: status_led_23
+        - script.execute: update_heating_state
+
+# 8 relay outputs, exposed as switches in Home Assistant
+switch:
+  - platform: gpio
+    pin: GPIO32
+    name: Relay1
+    id: relay1
+  - platform: gpio
+    pin: GPIO33
+    name: Relay2
+    id: relay2
+  - platform: gpio
+    pin: GPIO25
+    name: Relay3
+    id: relay3
+  - platform: gpio
+    pin: GPIO26
+    name: Relay4
+    id: relay4
+  - platform: gpio
+    pin: GPIO27
+    name: Relay5
+    id: relay5
+  - platform: gpio
+    pin: GPIO14
+    name: Relay6
+    id: relay6
+  - platform: gpio
+    pin: GPIO12
+    name: Relay7
+    id: relay7
+  - platform: gpio
+    pin: GPIO13
+    name: Relay8
+    id: relay8
+
+  # Template switch to quickly disable everything
+  - platform: template
+    name: "Master Switch"
+    id: master_switch
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_OFF
+    on_turn_on:
+      then:
+        - script.execute: update_heating_state
+    on_turn_off:
+      then:
+        - script.execute: update_heating_state
+
+globals:
+  - id: heat_req_1
+    type: bool
+  - id: heat_req_2
+    type: bool
+  - id: heat_req_3
+    type: bool
+  - id: heat_req_4
+    type: bool
+  - id: heat_req_5
+    type: bool
+  - id: heat_req_6
+    type: bool
+  - id: heat_req_7
+    type: bool
+  - id: heat_req_8
+    type: bool
+
+script:
+  - id: update_heating_state
+    then:
+      - lambda: |-
+          int system_on = id(master_switch).state && id(hass_status).state;
+          if(id(heat_req_1) && system_on) id(relay1).turn_on(); else id(relay1).turn_off();
+          if(id(heat_req_2) && system_on) id(relay2).turn_on(); else id(relay2).turn_off();
+          if(id(heat_req_3) && system_on) id(relay3).turn_on(); else id(relay3).turn_off();
+          if(id(heat_req_4) && system_on) id(relay4).turn_on(); else id(relay4).turn_off();
+          if(id(heat_req_5) && system_on) id(relay5).turn_on(); else id(relay5).turn_off();
+          if(id(heat_req_6) && system_on) id(relay6).turn_on(); else id(relay6).turn_off();
+          if(id(heat_req_7) && system_on) id(relay7).turn_on(); else id(relay7).turn_off();
+          if(id(heat_req_8) && system_on) id(relay8).turn_on(); else id(relay8).turn_off();
+
+sensor:
+  - platform: homeassistant
+    id: hass_zone_1
+    entity_id: sensor.heating_zone_1
+  - platform: homeassistant
+    id: hass_zone_2
+    entity_id: sensor.heating_zone_2
+  - platform: homeassistant
+    id: hass_zone_3
+    entity_id: sensor.heating_zone_3
+  - platform: homeassistant
+    id: hass_zone_4
+    entity_id: sensor.heating_zone_4
+  - platform: homeassistant
+    id: hass_zone_5
+    entity_id: sensor.heating_zone_5
+  - platform: homeassistant
+    id: hass_zone_6
+    entity_id: sensor.heating_zone_6
+  - platform: homeassistant
+    id: hass_zone_7
+    entity_id: sensor.heating_zone_7
+  - platform: homeassistant
+    id: hass_zone_8
+    entity_id: sensor.heating_zone_8
+
+
+climate:
+  # Use !include to make it easier to update all the settings if required.
+  - !include { file: heating_thermostat.yaml, vars: { index: 1 } }
+  - !include { file: heating_thermostat.yaml, vars: { index: 2 } }
+  - !include { file: heating_thermostat.yaml, vars: { index: 3 } }
+  - !include { file: heating_thermostat.yaml, vars: { index: 4 } }
+  - !include { file: heating_thermostat.yaml, vars: { index: 5 } }
+  - !include { file: heating_thermostat.yaml, vars: { index: 6 } }
+  - !include { file: heating_thermostat.yaml, vars: { index: 7 } }
+  - !include { file: heating_thermostat.yaml, vars: { index: 8 } }
+  

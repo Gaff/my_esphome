@@ -1,0 +1,29 @@
+esphome:
+  name: testbed
+
+esp32:
+  board: lolin32
+  framework:
+    type: arduino
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  password: ""
+
+ota:
+  password: ""
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Testbed Fallback Hotspot"
+    password: "bF5Kv2w5cSpB"
+
+captive_portal:
+
