@@ -42,8 +42,9 @@ captive_portal:
 
 # Sets up Bluetooth LE (Only on ESP32) to allow the user
 # to provision wifi credentials to the device.
-esp32_improv:
-  authorizer: none
+# Disabled: Seems to take up about 25% of the memory! :o
+#esp32_improv:
+#  authorizer: none
 
 # Status LED
 light:
@@ -146,22 +147,21 @@ switch:
         - script.execute: update_heating_state
 
 globals:
-  - id: heat_req_1
-    type: bool
-  - id: heat_req_2
-    type: bool
-  - id: heat_req_3
-    type: bool
-  - id: heat_req_4
-    type: bool
-  - id: heat_req_5
-    type: bool
-  - id: heat_req_6
-    type: bool
-  - id: heat_req_7
-    type: bool
-  - id: heat_req_8
-    type: bool
+  # BE CAREFUL: ARRAYS ARE 0 indexed! Humans use 1-indexing!
+  # Worse: in C++ you'll never be warned if you run off the end of the array.
+
+  # Transient variable to indicate that heat is required
+  - id: heat_req
+    type: bool[8]
+
+  # Store the home temperature and mode
+  - id: setpoint
+    type: float[8]
+    restore_value: true
+  - id: setmode
+    type: climate::ClimateMode[8]
+    restore_value: true
+
 
 script:
   - id: update_heating_state
@@ -174,14 +174,14 @@ script:
       # it's best to leave it with constant worst-case performance?
       - lambda: |-
           int system_on = id(master_switch).state && id(hass_status).state;
-          if(id(heat_req_1) && system_on) id(relay1).turn_on(); else id(relay1).turn_off();
-          if(id(heat_req_2) && system_on) id(relay2).turn_on(); else id(relay2).turn_off();
-          if(id(heat_req_3) && system_on) id(relay3).turn_on(); else id(relay3).turn_off();
-          if(id(heat_req_4) && system_on) id(relay4).turn_on(); else id(relay4).turn_off();
-          if(id(heat_req_5) && system_on) id(relay5).turn_on(); else id(relay5).turn_off();
-          if(id(heat_req_6) && system_on) id(relay6).turn_on(); else id(relay6).turn_off();
-          if(id(heat_req_7) && system_on) id(relay7).turn_on(); else id(relay7).turn_off();
-          if(id(heat_req_8) && system_on) id(relay8).turn_on(); else id(relay8).turn_off();
+          if(id(heat_req)[0] && system_on) id(relay1).turn_on(); else id(relay1).turn_off();
+          if(id(heat_req)[1] && system_on) id(relay2).turn_on(); else id(relay2).turn_off();
+          if(id(heat_req)[2] && system_on) id(relay3).turn_on(); else id(relay3).turn_off();
+          if(id(heat_req)[3] && system_on) id(relay4).turn_on(); else id(relay4).turn_off();
+          if(id(heat_req)[4] && system_on) id(relay5).turn_on(); else id(relay5).turn_off();
+          if(id(heat_req)[5] && system_on) id(relay6).turn_on(); else id(relay6).turn_off();
+          if(id(heat_req)[6] && system_on) id(relay7).turn_on(); else id(relay7).turn_off();
+          if(id(heat_req)[7] && system_on) id(relay8).turn_on(); else id(relay8).turn_off();
 
 sensor:
   - platform: homeassistant
