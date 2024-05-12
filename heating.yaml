@@ -9,6 +9,35 @@ esphome:
   project:
     name: esphome.web
     version: '1.0'
+  on_boot:
+    # Make sure we don't leave boost on:
+    priority: -100.0  # Must be after sensors are done
+    then:
+      - script.execute: 
+          id: boost_timer_1
+          delay_ms: 1000
+      - script.execute: 
+          id: boost_timer_2
+          delay_ms: 1000
+      - script.execute: 
+          id: boost_timer_3
+          delay_ms: 1000
+      - script.execute: 
+          id: boost_timer_4
+          delay_ms: 1000
+      - script.execute: 
+          id: boost_timer_5
+          delay_ms: 1000
+      - script.execute: 
+          id: boost_timer_6
+          delay_ms: 1000
+      - script.execute: 
+          id: boost_timer_7
+          delay_ms: 1000
+      - script.execute: 
+          id: boost_timer_8
+          delay_ms: 1000
+
 
 esp32:
   board: esp32dev
@@ -182,6 +211,14 @@ script:
           if(id(heat_req)[5] && system_on) id(relay6).turn_on(); else id(relay6).turn_off();
           if(id(heat_req)[6] && system_on) id(relay7).turn_on(); else id(relay7).turn_off();
           if(id(heat_req)[7] && system_on) id(relay8).turn_on(); else id(relay8).turn_off();
+  - !include { file: heating_boost_timer.yaml, vars: { index: 1 } }
+  - !include { file: heating_boost_timer.yaml, vars: { index: 2 } }
+  - !include { file: heating_boost_timer.yaml, vars: { index: 3 } }
+  - !include { file: heating_boost_timer.yaml, vars: { index: 4 } }
+  - !include { file: heating_boost_timer.yaml, vars: { index: 5 } }
+  - !include { file: heating_boost_timer.yaml, vars: { index: 6 } }
+  - !include { file: heating_boost_timer.yaml, vars: { index: 7 } }
+  - !include { file: heating_boost_timer.yaml, vars: { index: 8 } }
 
 sensor:
   - platform: homeassistant
