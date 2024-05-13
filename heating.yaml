@@ -87,6 +87,8 @@ button:
     name: "${friendly_name} restart"
 
 binary_sensor:
+  # On-board status LED tells us if HASS is connected
+  # (Though would also go red if a serial console is connected)
   - platform: status
     name: "${friendly_name} status"
     id: hass_status
@@ -99,7 +101,7 @@ binary_sensor:
         - light.turn_off: status_led_23
         - script.execute: update_heating_state
 
-  # Expose the relays but as sensors (i.e. read only!)
+  # Expose the relays to HASS as sensors (i.e. read only!)
   # Note that template sensors update every loop() no matter what.
   - platform: template
     id: heating1
@@ -135,7 +137,8 @@ binary_sensor:
     lambda: return id(relay8).state;
 
 
-# 8 relay outputs, NOT exposed as switches in Home Assistant
+# 8 relay outputs, NOT exposed as switches in Home Assistant to prevent users
+# putting them into odd states.
 switch:
   - platform: gpio
     pin: GPIO32
@@ -174,6 +177,23 @@ switch:
     on_turn_off:
       then:
         - script.execute: update_heating_state
+
+number:
+  # HASS as a 'timer' entity, but not esphome (yet; alas)
+  - platform: template
+    name: "Boost time"
+    id: boost_time
+    min_value: 0
+    # 2 days
+    max_value: 2880
+    step: 1
+    restore_value: true
+    optimistic: true
+    unit_of_measurement: minutes
+    icon: mdi:timer-outline
+    # 6 hours
+    initial_value: 360
+    entity_category: config 
 
 globals:
   # BE CAREFUL: ARRAYS ARE 0 indexed! Humans use 1-indexing!
@@ -221,6 +241,9 @@ script:
   - !include { file: heating_boost_timer.yaml, vars: { index: 8 } }
 
 sensor:
+  # Load the temnperatures from home assistant
+  # Tip: Use a "Combine the state..." sensor (even if it's just combining 1 state) 
+  # so that the names in HASS align with the names here:
   - platform: homeassistant
     id: hass_zone_1
     entity_id: sensor.heating_zone_1

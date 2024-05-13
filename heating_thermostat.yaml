@@ -21,9 +21,13 @@ preset:
     # on_control lamdas will overrite these settings anyway
     default_target_temperature_low: 17
     mode: 'off'
+  # Boost and Sleep are used to indicate a temporary change in status
   - name: boost
-    default_target_temperature_low: 25
+    default_target_temperature_low: 30
     mode: heat
+  - name: sleep
+    default_target_temperature_low: 10
+    mode: 'off'
 default_preset: home
 on_control:
   # The idea here is we want to store the setpoint and mode for the "home" peset
@@ -41,6 +45,10 @@ on_control:
   # The issue here is the presets, which should be taken out of the themostat and simply be a control layer
   # ...but that's a lot of work!
   - lambda: |-
+      //Skip any updates that also change the preset.
+      //(In theory you clould set the preset to HOME and adjust the setpoints, in practice this doesn't happen)
+      if (x.get_preset().has_value())
+        return;
       auto zp = id(zone_${index}).preset;
       if(zp.has_value() && zp.value() == ClimatePreset::CLIMATE_PRESET_HOME) {
         //An adjustment is being made in 'HOME' mode...
@@ -73,5 +81,5 @@ preset_change:
       id: boost_timer_${index}
       # Might be neat if this was configurable?
       # 6hrs = 6*60*60*1000:
-      delay_ms: !lambda return 6*60*60*1000;
+      delay_ms: !lambda return id(boost_time).state * 60 * 1000;
 

@@ -5,7 +5,9 @@ parameters:
 then:
   - if:
       condition:
-        lambda: return id(zone_${index}).preset == ClimatePreset::CLIMATE_PRESET_BOOST;
+        lambda: |- 
+          return id(zone_${index}).preset == ClimatePreset::CLIMATE_PRESET_BOOST ||
+                  id(zone_${index}).preset == ClimatePreset::CLIMATE_PRESET_SLEEP  ;
       then:
         - delay: !lambda return delay_ms;
         - logger.log: "zone_${index} boost time expired."
