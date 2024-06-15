@@ -30,20 +30,22 @@ preset:
     mode: 'off'
 default_preset: home
 on_control:
-  # The idea here is we want to store the setpoint and mode for the "home" peset
-  # When we change back to the home preset, we restore these things!
+  # This is actually part of the boost / sleep logic.
+  # The idea here is we want to store the setpoint and mode for the "home" peset,
+  # Then when we change back to the home preset, we restore these things.
   #
   # Note that the Thermostat changes are a bit non-intuitive:
   # 1. User changes preset
-  # 2. Thermostat internally changes Climate state
-  # 3. Thermostat propagates the changes through the system
-  # 4. This code intercepts the state update, to change it
-  # 5. New state propagates through the system
-  # 6. Internal climate state is updated.
+  # 2. The on_control code runs
+  # 3. Thermostat internally changes Climate state
+  # 4. Thermostat propagates the changes through the system
+  # 5. The preset_change code intercepts the state update, to change it
+  # 6. New state propagates through the system
+  # 7. Internal climate state is updated.
   #
-  # If we restore the settings in step 4 it's too late. Hence we need to do it in step 2.
+  # If we restore the settings in step 5 it's too late. Hence we need to do it in step 2.
   # The issue here is the presets, which should be taken out of the themostat and simply be a control layer
-  # ...but that's a lot of work!
+  # ...but that's a lot of work to ESPHome!
   - lambda: |-
       //Skip any updates that also change the preset.
       //(In theory you clould set the preset to HOME and adjust the setpoints, in practice this doesn't happen)
@@ -77,9 +79,11 @@ preset_change:
         zone->target_temperature = id(setpoint)[${index}-1];
       }
   # Don't stay in boost mode for too long!
+  # In `boost_time` minutes run the boost_timer_n script to reset us back to HOME
   - script.execute: 
       id: boost_timer_${index}
-      # Might be neat if this was configurable?
-      # 6hrs = 6*60*60*1000:
+      # delay_ms is a parameter to the script 
+      # [dunno why I did it this way, could have been hardcoded to this in the script]
       delay_ms: !lambda return id(boost_time).state * 60 * 1000;
+      
 

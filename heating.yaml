@@ -135,6 +135,14 @@ binary_sensor:
     id: heating8
     name: Heating 8
     lambda: return id(relay8).state;
+  
+  # Master sensor to tell you if any heating is on:
+  - platform: template
+    id: heating
+    name: Heating
+    lambda: !lambda |- 
+          return id(relay1).state || id(relay2).state || id(relay3).state || id(relay4).state 
+                || id(relay5).state || id(relay6).state || id(relay7).state || id(relay8).state;
 
 
 # 8 relay outputs, NOT exposed as switches in Home Assistant to prevent users
@@ -241,7 +249,7 @@ script:
   - !include { file: heating_boost_timer.yaml, vars: { index: 8 } }
 
 sensor:
-  # Load the temnperatures from home assistant
+  # Load the temperatures from home assistant
   # Tip: Use a "Combine the state..." sensor (even if it's just combining 1 state) 
   # so that the names in HASS align with the names here:
   - platform: homeassistant

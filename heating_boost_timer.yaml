@@ -1,3 +1,5 @@
+# Script to make the Boost (and Sleep) run for a predetermined time before resotring 
+# HOME mode.
 id: boost_timer_${index}
 mode: restart
 parameters:
