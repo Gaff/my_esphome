@@ -199,8 +199,8 @@ number:
     optimistic: true
     unit_of_measurement: minutes
     icon: mdi:timer-outline
-    # 6 hours
-    initial_value: 360
+    # 3 hours
+    initial_value: 180
     entity_category: config 
 
 globals:
