@@ -7,9 +7,9 @@ sensor: hass_zone_${index}
 # Can't see any real point in making it less agressive,
 # the inertia of our heating system is humongous, so it's not going
 # to fluctuate really.
-min_idle_time: 15s
-min_heating_off_time: 15s
-min_heating_run_time: 15s
+min_idle_time: 5s
+min_heating_off_time: 5s
+min_heating_run_time: 5s
 heat_action:
   - lambda: id(heat_req)[${index}-1] = true;
   - script.execute: update_heating_state
@@ -18,16 +18,16 @@ idle_action:
   - script.execute: update_heating_state
 preset:
   - name: home
-    # on_control lamdas will overrite these settings anyway
+    # preset_change lamdas will overrite these settings anyway
     default_target_temperature_low: 17
-    mode: 'off'
+    # mode: 'off'
   # Boost and Sleep are used to indicate a temporary change in status
   - name: boost
     default_target_temperature_low: 30
     mode: heat
   - name: sleep
     default_target_temperature_low: 10
-    mode: 'off'
+    # mode: 'off' # No need to change to 'off', the low temp will (de-facto) do that for us.
 default_preset: home
 on_control:
   # This is actually part of the boost / sleep logic.
@@ -54,15 +54,19 @@ on_control:
       auto zp = id(zone_${index}).preset;
       if(zp.has_value() && zp.value() == ClimatePreset::CLIMATE_PRESET_HOME) {
         //An adjustment is being made in 'HOME' mode...
-        if(x.get_mode().has_value()) {
-          ESP_LOGD("THERMOSTAT", " Saving mode ${index}: %d", x.get_mode().value());
-          id(setmode)[${index}-1] = x.get_mode().value();
-        }
         if(x.get_target_temperature().has_value()) {
           ESP_LOGD("THERMOSTAT", " Saving setpoint ${index}: %.2f", x.get_target_temperature().value());
           id(setpoint)[${index}-1] = x.get_target_temperature().value();
         }
       }
+      //Always save adjustements to the mode
+      //(e.g. if you switch heating on in BOOST mode, remember to stay on)
+      if(x.get_mode().has_value()) {
+        ESP_LOGD("THERMOSTAT", " Saving mode ${index}: %d", x.get_mode().value());
+        id(setmode)[${index}-1] = x.get_mode().value();
+      }
+      // Question: If the on/off state switches, should we exit Boost/Sleep mode?
+      // Or: If we're in BOOST mode but we switch OFF, remain continue with heat until the Boost is done? Hmm.     
 preset_change:
   # At this point the internal state has been updated with the new preset, but no status update has been sent
   # Use a lambda to update the settings we care about to the stored values.
