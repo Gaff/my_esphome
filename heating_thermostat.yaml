@@ -19,15 +19,17 @@ idle_action:
 preset:
   - name: home
     # preset_change lamdas will overrite these settings anyway
+    default_target_temperature_low: 18
+  - name: eco
+    # preset_change lamdas will overrite these settings anyway
     default_target_temperature_low: 17
-    # mode: 'off'
-  # Boost and Sleep are used to indicate a temporary change in status
-  - name: boost
-    default_target_temperature_low: 30
-    mode: heat
+  # Boost is used to indicate a temporary change in status
+  - name: boost    
+    default_target_temperature_low: 24 # I've never ever wanted it warmer than this!
+    mode: 'heat'
   - name: sleep
-    default_target_temperature_low: 10
-    # mode: 'off' # No need to change to 'off', the low temp will (de-facto) do that for us.
+    default_target_temperature_low: 10 # Can't set this below the min.
+    #mode: 'off'
 default_preset: home
 on_control:
   # This is actually part of the boost / sleep logic.
@@ -47,26 +49,34 @@ on_control:
   # The issue here is the presets, which should be taken out of the themostat and simply be a control layer
   # ...but that's a lot of work to ESPHome!
   - lambda: |-
-      //Skip any updates that also change the preset.
-      //(In theory you clould set the preset to HOME and adjust the setpoints, in practice this doesn't happen)
-      if (x.get_preset().has_value())
+      //Handle preset adjustments separately:      
+      if (x.get_preset().has_value()) {
+        if(x.get_preset().value() != ClimatePreset::CLIMATE_PRESET_BOOST) {
+          //If we're not boosting, store the preset, so we can potentially restore it after a boost.
+          id(setpreset)[${index}-1] = x.get_preset().value();
+        }
+
+        //return now, so we don't mess with any temperature presets.
+        //(In theory you clould set the preset to HOME and adjust the setpoints, in practice this doesn't happen)
         return;
+      }
+
+
       auto zp = id(zone_${index}).preset;
       if(zp.has_value() && zp.value() == ClimatePreset::CLIMATE_PRESET_HOME) {
-        //An adjustment is being made in 'HOME' mode...
+        //An adjustment is being made in 'HOME' mode... Remember it!
         if(x.get_target_temperature().has_value()) {
           ESP_LOGD("THERMOSTAT", " Saving setpoint ${index}: %.2f", x.get_target_temperature().value());
           id(setpoint)[${index}-1] = x.get_target_temperature().value();
         }
       }
+
       //Always save adjustements to the mode
       //(e.g. if you switch heating on in BOOST mode, remember to stay on)
       if(x.get_mode().has_value()) {
         ESP_LOGD("THERMOSTAT", " Saving mode ${index}: %d", x.get_mode().value());
         id(setmode)[${index}-1] = x.get_mode().value();
       }
-      // Question: If the on/off state switches, should we exit Boost/Sleep mode?
-      // Or: If we're in BOOST mode but we switch OFF, remain continue with heat until the Boost is done? Hmm.     
 preset_change:
   # At this point the internal state has been updated with the new preset, but no status update has been sent
   # Use a lambda to update the settings we care about to the stored values.
@@ -74,13 +84,23 @@ preset_change:
   - lambda: |-
       auto zone = id(zone_${index});
       auto zp = zone->preset;
-      if(zp.has_value() && zp.value() == ClimatePreset::CLIMATE_PRESET_HOME) {
-        //We just changed back to home
-        ESP_LOGD("THERMOSTAT", " Restoring setmode ${index}: %d", id(setmode)[${index}-1]);
-        ESP_LOGD("THERMOSTAT", " Restoring setpoint ${index}: %.2f", id(setpoint)[${index}-1]);
+      if(zp.has_value()) {
+        if(zp.value() != ClimatePreset::CLIMATE_PRESET_BOOST) {
+          //When we exit boost, put the mode back how it was.
+          zone->mode = id(setmode)[${index}-1];
+          ESP_LOGD("THERMOSTAT", " Restoring setmode ${index}: %d", zone->mode);
+        }
 
-        zone->mode = id(setmode)[${index}-1];
-        zone->target_temperature = id(setpoint)[${index}-1];
+        if(zp.value() == ClimatePreset::CLIMATE_PRESET_HOME) {
+          //We just changed back to home          
+          zone->target_temperature = id(setpoint)[${index}-1];
+          ESP_LOGD("THERMOSTAT", " Restoring setpoint ${index}: %.2f", zone->target_temperature);
+        }
+        if(zp.value() == ClimatePreset::CLIMATE_PRESET_ECO) {
+          //We just changed back to home
+          zone->target_temperature = id(setpoint)[${index}-1] + id(eco_delta).state;
+          ESP_LOGD("THERMOSTAT", " Restoring (eco)setpoint ${index}: %.2f", zone->target_temperature);
+        }
       }
   # Don't stay in boost mode for too long!
   # In `boost_time` minutes run the boost_timer_n script to reset us back to HOME

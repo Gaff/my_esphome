@@ -8,12 +8,15 @@ then:
   - if:
       condition:
         lambda: |- 
-          return id(zone_${index}).preset == ClimatePreset::CLIMATE_PRESET_BOOST ||
-                  id(zone_${index}).preset == ClimatePreset::CLIMATE_PRESET_SLEEP  ;
+          return id(zone_${index}).preset == ClimatePreset::CLIMATE_PRESET_BOOST;
       then:
         - delay: !lambda return delay_ms;
         - logger.log: "zone_${index} boost time expired."
         - climate.control:
             id: zone_${index}
-            preset: HOME
+            # Put things back how they were before we boosted.
+            preset: !lambda return id(setpreset)[${index}-1];
+            #Tempting to do this here, but if you manually exit the boost it won't restore
+            #Instead do it in the preset_change fn
+            #mode: !lambda return id(setmode)[${index}-1];
   
