@@ -10,7 +10,7 @@ The underfloor heating system supplied with has 8 zones, each one has been fitte
 
 ![Emetti CS17 Timeswitch](Emmeti-CS-17-Touchscreen-Programmable-Thermostat-PRODUCT.png)
 
-but I'm sure you know the sort. One that has an internal schedule that is used to control when the heating is on, but is a real pain to program. Worse, there's one for each of the 8 zones, and they all have to be programmed separately!
+but I'm sure you know the sort. One that has an internal schedule that is used to control when the heating is on, but is a real pain to program. Worse, there are 8 separate controllers that each need to be programmed separately!
 
 The solution: Move all this to [Home Assistant](https://www.home-assistant.io/)!
 
@@ -34,6 +34,7 @@ I'm hoping the picture explains everything, but feel free to reach out with ques
 ### Firmware
 
 I'm using the ESPHome climate component with the relays as the actuators, and home-assistant as the input. However I've made some tweaks. Here are the highlights:
+ * The firmware remembers the setpoint whenever it is changed.
  * Added a "master control" virtual switch, to easily disable the whole system.
  * Added a firmware-based boost preset that heats for a limited period.
  * Added an 'eco-mode' that sets the temperature a couple of degreees below the usual setpoint.
@@ -49,7 +50,7 @@ I have an [Emmeti EWC-2 Wiring Centre](https://emmeti.co.uk/products/zone-contro
 
 ![EWC2 diagram with external inputs highlighted](EWC2_component_view.png)
 
-I could have wired the outputs into blocks H above, but I wanted to leave the existing timeswitches in place just-in-case. Fortunately the wires to the actuatorswere already spliced further down it was easy to wire the extra inputs in parallel. Note that with the EWC-2 wiring centre it doesn't matter if you power the actuater via the `SwL` switch-live input terminal, or via the `L1` live output terminal, either way the EWC will know to start the pump. 
+I could have wired the outputs into blocks H above, but I wanted to leave the existing timeswitches in place just-in-case. Fortunately the wires to the actuators were already spliced further down it was easy to wire the extra inputs in parallel. Note that with the EWC-2 wiring centre it doesn't matter if you power the actuater via the `SwL` switch-live input terminal, or via the `L1` live output terminal, either way the EWC will know to start the pump. 
 
 ### Control via Home Assitant
 
