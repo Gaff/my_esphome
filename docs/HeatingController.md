@@ -23,7 +23,7 @@ The solution: Move all this to [Home Assistant](https://www.home-assistant.io/)!
 * 1x 8-way terminal block (to connect on to the heating channels)
 * 1x DPDT switch, to disconnect the ESP powersupply if necessary.
 * 1x Fuse and holder (just in case!)
-* Box, some terminals, hot glue - to house everything!
+* Box, standoffs, some terminals, hot glue - to house everything.
 
 ### Construction
 
@@ -46,7 +46,7 @@ See the [main project](../heating.yaml). Lots of comments in there.
 
 ### Installation
 
-I have an [Emmeti EWC-2 Wiring Centre](https://emmeti.co.uk/products/zone-controls/wiring-centres/). Although this was already installed it has some spare terminals intended for powering an external timeswitch which are perfect for powering this project:
+I have an [Emmeti EWC-2 Wiring Centre](https://emmeti.co.uk/products/zone-controls/wiring-centres/). Although this was already installed it has some spare terminals intended for powering an external timeswitch which are perfect for powering this project (highlighted in the diagram here):
 
 ![EWC2 diagram with external inputs highlighted](EWC2_component_view.png)
 
