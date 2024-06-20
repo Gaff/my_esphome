@@ -6,7 +6,7 @@ I've built a custom controller for my 8-zone underfloor heating system:
 
 ### Problem / Rationale
 
-The underfloor heating system supplied with has 8 zones, each one has been fitted with a 'dumb' thermostat. Specifically the [Emetti CS17 Timeswitch](https://emmeti.co.uk/products/zone-controls/cs17-touchscreen-programmable-thermostat/):
+The underfloor heating system supplied with my home has 8 zones, each one has been fitted with a 'dumb' thermostat. Specifically the [Emetti CS17 Timeswitch](https://emmeti.co.uk/products/zone-controls/cs17-touchscreen-programmable-thermostat/):
 
 ![Emetti CS17 Timeswitch](Emmeti-CS-17-Touchscreen-Programmable-Thermostat-PRODUCT.png)
 
@@ -24,6 +24,7 @@ The solution: Move all this to [Home Assistant](https://www.home-assistant.io/)!
 * 1x DPDT switch, to disconnect the ESP powersupply if necessary.
 * 1x Fuse and holder (just in case!)
 * Box, standoffs, some terminals, hot glue - to house everything.
+* Home assistant, plus zigbee / bluetooth network for the themometers - already setup.
 
 ### Construction
 
