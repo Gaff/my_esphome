@@ -17,7 +17,7 @@ The solution: Move all this to [Home Assistant](https://www.home-assistant.io/)!
 ### Bill of Materials
 
 * 1x [ESP32 relay board x8](https://devices.esphome.io/devices/ESP32E-Relay-X8)
-* 8x [Mi Temperature and Humidity Monitor 2](https://buy.mi.com/uk/item/3204500023)
+* 8x [Mi Temperature and Humidity Monitor 2](https://buy.mi.com/uk/item/3204500023) BLE themometer
 * 1x [Hi-Link HLK-PM01 5v 600ma power supply](https://lygte-info.dk/review/Power%20Mains%20to%205V%200.6A%20Hi-Link%20HLK-PM01%20UK.html) 
 * 1x Multiway terminal block (to distribute power to the relay common terminals)
 * 1x 8-way terminal block (to connect on to the heating channels)
