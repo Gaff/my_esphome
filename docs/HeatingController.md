@@ -24,7 +24,9 @@ The solution: Move all this to [Home Assistant](https://www.home-assistant.io/)!
 * 1x DPDT switch, to disconnect the ESP powersupply if necessary.
 * 1x Fuse and holder (just in case!)
 * Box, standoffs, some terminals, hot glue - to house everything.
-* Home assistant, plus zigbee / bluetooth network for the themometers - already setup.
+* Home assistant, plus bluetooth (BLE) network for the themometers - already setup.
+
+(Alternatively I could have used ZigBee thermometers and a ZigBee network)
 
 ### Construction
 
